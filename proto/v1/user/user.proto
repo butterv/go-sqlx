@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package grpc.health.v1;
+
+option go_package = "github.com/butterv/go-sqlx/app/interface/rpc/v1/user";
+
+service Users {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+}
+
+message User {
+  string user_id = 1;
+  string email = 2;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message GetUsersRequest {
+  repeated string user_ids = 1;
+}
+
+message GetUsersResponse {
+  repeated User users = 1;
+}
+
+message CreateUserRequest {
+  string email = 1;
+}
+
+message CreateUserResponse {
+  string user_id = 1;
+}
