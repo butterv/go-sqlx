@@ -3,7 +3,9 @@ module github.com/butterv/go-sqlx
 go 1.15
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.5.1 // indirect
+	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/jmoiron/sqlx v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
