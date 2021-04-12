@@ -1,4 +1,4 @@
-package persistence_test
+package user_test
 
 import (
 	"database/sql"
@@ -7,16 +7,36 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
-	"github.com/butterv/go-sqlx/app/infrastructure/persistence"
+	"github.com/butterv/go-sqlx/app/infrastructure/persistence/test"
+	"github.com/butterv/go-sqlx/app/infrastructure/persistence/user"
 )
 
-var usersColumns = []string{"id", "email", "created_at", "updated_at", "deleted_at"}
+func TestNewUserRepositoryAccess(t *testing.T) {
+	_, db := test.DbMock(t)
+	defer db.Close()
 
-func TestUserRepository_FindByID(t *testing.T) {
+	got := user.NewUserRepositoryAccess(db)
+	if got == nil {
+		t.Fatalf("user.NewUserRepositoryAccess(db) = nil; want not nil")
+	}
+}
+
+func TestNewUserRepositoryAccess_ReturnsNil(t *testing.T) {
+	var db *sqlx.DB
+
+	got := user.NewUserRepositoryAccess(db)
+	if got != nil {
+		t.Fatalf("user.NewUserRepositoryAccess(db) != nil; want nil")
+	}
+}
+
+func TestDbUserRepository_FindByID(t *testing.T) {
 	now := time.Now()
 	want := &model.User{
 		ID:        "TEST_ID",
@@ -26,19 +46,19 @@ func TestUserRepository_FindByID(t *testing.T) {
 		DeletedAt: nil,
 	}
 
-	wantQuery := "SELECT * FROM users WHERE id = ?"
+	wantQuery := "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL"
 
-	mock, db := dbMock(t)
+	mock, db := test.DbMock(t)
 	defer db.Close()
 
 	id := model.UserID("TEST_ID")
 
 	mock.ExpectQuery(regexp.QuoteMeta(wantQuery)).
 		WithArgs(id).
-		WillReturnRows(sqlmock.NewRows(usersColumns).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "email", "created_at", "updated_at", "deleted_at"}).
 			AddRow(want.ID, want.Email, want.CreatedAt, want.UpdatedAt, want.DeletedAt))
 
-	r := persistence.NewUserRepository(db)
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByID(id)
 	if err != nil {
@@ -52,10 +72,10 @@ func TestUserRepository_FindByID(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindByID_NotFound(t *testing.T) {
-	wantQuery := "SELECT * FROM users WHERE id = ?"
+func TestDbUserRepository_FindByID_NotFound(t *testing.T) {
+	wantQuery := "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL"
 
-	mock, db := dbMock(t)
+	mock, db := test.DbMock(t)
 	defer db.Close()
 
 	id := model.UserID("TEST_ID")
@@ -64,7 +84,7 @@ func TestUserRepository_FindByID_NotFound(t *testing.T) {
 		WithArgs(id).
 		WillReturnError(sql.ErrNoRows)
 
-	r := persistence.NewUserRepository(db)
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByID(id)
 	if err != nil {
@@ -78,11 +98,11 @@ func TestUserRepository_FindByID_NotFound(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindByID_Error(t *testing.T) {
+func TestDbUserRepository_FindByID_Error(t *testing.T) {
 	wantErr := errors.New("an error occurred")
-	wantQuery := "SELECT * FROM users WHERE id = ?"
+	wantQuery := "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL"
 
-	mock, db := dbMock(t)
+	mock, db := test.DbMock(t)
 	defer db.Close()
 
 	id := model.UserID("TEST_ID")
@@ -91,7 +111,7 @@ func TestUserRepository_FindByID_Error(t *testing.T) {
 		WithArgs(id).
 		WillReturnError(wantErr)
 
-	r := persistence.NewUserRepository(db)
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByID(id)
 	if err == nil {
@@ -108,9 +128,9 @@ func TestUserRepository_FindByID_Error(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindByIDs(t *testing.T) {
+func TestDbUserRepository_FindByIDs(t *testing.T) {
 	now := time.Now()
-	want := []model.User{
+	want := model.Users{
 		{
 			ID:        "TEST_ID1",
 			Email:     "TEST_EMAIL1",
@@ -134,14 +154,14 @@ func TestUserRepository_FindByIDs(t *testing.T) {
 		},
 	}
 
-	wantQuery := "SELECT * FROM users WHERE id IN (?, ?, ?)"
+	wantQuery := "SELECT * FROM users WHERE id IN (?, ?, ?) AND deleted_at IS NULL"
 
-	mock, db := dbMock(t)
+	mock, db := test.DbMock(t)
 	defer db.Close()
 
 	ids := []model.UserID{"TEST_ID1", "TEST_ID2", "TEST_ID3"}
 
-	rows := sqlmock.NewRows(usersColumns)
+	rows := sqlmock.NewRows([]string{"id", "email", "created_at", "updated_at", "deleted_at"})
 	for _, v := range want {
 		rows.AddRow(v.ID, v.Email, v.CreatedAt, v.UpdatedAt, v.DeletedAt)
 	}
@@ -150,7 +170,7 @@ func TestUserRepository_FindByIDs(t *testing.T) {
 		WithArgs(ids[0], ids[1], ids[2]).
 		WillReturnRows(rows)
 
-	r := persistence.NewUserRepository(db)
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByIDs(ids)
 	if err != nil {
@@ -164,13 +184,13 @@ func TestUserRepository_FindByIDs(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindByIDs_InReturnsError(t *testing.T) {
-	_, db := dbMock(t)
+func TestDbUserRepository_FindByIDs_InReturnsError(t *testing.T) {
+	_, db := test.DbMock(t)
 	defer db.Close()
 
-	r := persistence.NewUserRepository(db)
-
 	var ids []model.UserID
+
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByIDs(ids)
 	if err == nil {
@@ -181,10 +201,10 @@ func TestUserRepository_FindByIDs_InReturnsError(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindByIDs_NotFound(t *testing.T) {
-	wantQuery := "SELECT * FROM users WHERE id IN (?, ?, ?)"
+func TestDbUserRepository_FindByIDs_NotFound(t *testing.T) {
+	wantQuery := "SELECT * FROM users WHERE id IN (?, ?, ?) AND deleted_at IS NULL"
 
-	mock, db := dbMock(t)
+	mock, db := test.DbMock(t)
 	defer db.Close()
 
 	ids := []model.UserID{"TEST_ID1", "TEST_ID2", "TEST_ID3"}
@@ -193,7 +213,7 @@ func TestUserRepository_FindByIDs_NotFound(t *testing.T) {
 		WithArgs(ids[0], ids[1], ids[2]).
 		WillReturnError(sql.ErrNoRows)
 
-	r := persistence.NewUserRepository(db)
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByIDs(ids)
 	if err != nil {
@@ -207,11 +227,11 @@ func TestUserRepository_FindByIDs_NotFound(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindByIDs_Error(t *testing.T) {
+func TestDbUserRepository_FindByIDs_Error(t *testing.T) {
 	wantErr := errors.New("an error occurred")
-	wantQuery := "SELECT * FROM users WHERE id IN (?, ?, ?)"
+	wantQuery := "SELECT * FROM users WHERE id IN (?, ?, ?) AND deleted_at IS NULL"
 
-	mock, db := dbMock(t)
+	mock, db := test.DbMock(t)
 	defer db.Close()
 
 	ids := []model.UserID{"TEST_ID1", "TEST_ID2", "TEST_ID3"}
@@ -220,7 +240,7 @@ func TestUserRepository_FindByIDs_Error(t *testing.T) {
 		WithArgs(ids[0], ids[1], ids[2]).
 		WillReturnError(wantErr)
 
-	r := persistence.NewUserRepository(db)
+	r := user.NewUserRepositoryAccess(db)
 
 	got, err := r.FindByIDs(ids)
 	if err == nil {
@@ -231,108 +251,6 @@ func TestUserRepository_FindByIDs_Error(t *testing.T) {
 	}
 	if got != nil {
 		t.Errorf("r.FindByIDs(%v) = %#v, _; want nil", ids, got)
-	}
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
-	}
-}
-
-func TestUserRepository_Create(t *testing.T) {
-	wantQuery := "INSERT INTO users (id, email) VALUES (?, ?)"
-
-	mock, db := dbMock(t)
-	defer db.Close()
-
-	id := model.UserID("TEST_ID")
-	email := "TEST_EMAIL"
-
-	mock.ExpectExec(regexp.QuoteMeta(wantQuery)).
-		WithArgs(id, email).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	r := persistence.NewUserRepository(db)
-
-	err := r.Create(id, email)
-	if err != nil {
-		t.Fatalf("r.Create(%s, %s) = %#v; want nil", id, email, err)
-	}
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
-	}
-}
-
-func TestUserRepository_Create_Error(t *testing.T) {
-	wantErr := errors.New("an error occurred")
-	wantQuery := "INSERT INTO users (id, email) VALUES (?, ?)"
-
-	mock, db := dbMock(t)
-	defer db.Close()
-
-	id := model.UserID("TEST_ID")
-	email := "TEST_EMAIL"
-
-	mock.ExpectExec(regexp.QuoteMeta(wantQuery)).
-		WithArgs(id, email).
-		WillReturnError(wantErr)
-
-	r := persistence.NewUserRepository(db)
-
-	err := r.Create(id, email)
-	if err == nil {
-		t.Fatalf("r.Create(%s, %s) = nil; want %v", id, email, wantErr)
-	}
-	if !errors.Is(err, wantErr) {
-		t.Errorf("r.Create(%s, %s) = %#v; want %v", id, email, err, wantErr)
-	}
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
-	}
-}
-
-func TestUserRepository_DeleteByID(t *testing.T) {
-	wantQuery := "UPDATE users SET deleted_at = NOW() WHERE id = ?"
-
-	mock, db := dbMock(t)
-	defer db.Close()
-
-	id := model.UserID("TEST_ID")
-
-	mock.ExpectExec(regexp.QuoteMeta(wantQuery)).
-		WithArgs(id).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	r := persistence.NewUserRepository(db)
-
-	err := r.DeleteByID(id)
-	if err != nil {
-		t.Fatalf("r.DeleteByID(%s) = %#v; want nil", id, err)
-	}
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
-	}
-}
-
-func TestUserRepository_DeleteByID_Error(t *testing.T) {
-	wantErr := errors.New("an error occurred")
-	wantQuery := "UPDATE users SET deleted_at = NOW() WHERE id = ?"
-
-	mock, db := dbMock(t)
-	defer db.Close()
-
-	id := model.UserID("TEST_ID")
-
-	mock.ExpectExec(regexp.QuoteMeta(wantQuery)).
-		WithArgs(id).
-		WillReturnError(wantErr)
-
-	r := persistence.NewUserRepository(db)
-
-	err := r.DeleteByID(id)
-	if err == nil {
-		t.Fatalf("r.DeleteByID(%s) = nil; want %v", id, wantErr)
-	}
-	if !errors.Is(err, wantErr) {
-		t.Errorf("r.DeleteByID(%s) = %#v; want %v", id, err, wantErr)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)

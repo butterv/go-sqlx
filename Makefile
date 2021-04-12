@@ -10,6 +10,9 @@ lint:
 test:
 	go test -v ./...
 
+test-coverage:
+	go test -cover ./...
+
 benchmark:
 	go test -bench . -benchmem
 
