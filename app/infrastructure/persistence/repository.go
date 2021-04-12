@@ -27,10 +27,10 @@ func New(db *sqlx.DB) repository.Repository {
 	}
 }
 
-func (r *persistenceRepository) NewConnection(ctx context.Context) (repository.Connection, error) {
+func (r *persistenceRepository) NewConnection(ctx context.Context) repository.Connection {
 	return &persistenceConnection{
 		db: r.db,
-	}, nil
+	}
 }
 
 func (c *persistenceConnection) Close() error {

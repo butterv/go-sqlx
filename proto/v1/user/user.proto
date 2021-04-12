@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc.health.v1;
+package user;
 
 option go_package = "github.com/butterv/go-sqlx/app/interface/rpc/v1/user";
 
@@ -17,7 +17,7 @@ message User {
 
 message GetUserRequest {
   string user_id = 1;
-}33333
+}
 
 message GetUserResponse {
   User user = 1;

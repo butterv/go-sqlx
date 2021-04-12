@@ -26,10 +26,10 @@ func New(s *test.Store) repository.Repository {
 	}
 }
 
-func (r *inmemoryRepository) NewConnection(ctx context.Context) (repository.Connection, error) {
+func (r *inmemoryRepository) NewConnection(ctx context.Context) repository.Connection {
 	return &inmemoryConnection{
 		s: r.s,
-	}, nil
+	}
 }
 
 func (c *inmemoryConnection) Close() error {
