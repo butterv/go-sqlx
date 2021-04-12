@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"

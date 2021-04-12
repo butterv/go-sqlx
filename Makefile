@@ -1,14 +1,17 @@
 init:
-	GO111MODULE=on go mod download
+	go mod download
 
 build:
-	GO111MODULE=on go build
+	go build
 
 lint:
-	GO111MODULE=on golangci-lint run ./app/...
+	golangci-lint run ./app/...
 
 test:
-	go test -v ./...
+	go test -v -race ./...
+
+test-coverage:
+	go test -race -cover -coverprofile=coverage.out ./...
 
 benchmark:
 	go test -bench . -benchmem
@@ -24,48 +27,3 @@ generate-pb:
 			--go-grpc_out=./app/interface/rpc/v1 \
 			--go-grpc_opt=paths=source_relative; \
 	done
-
-app-build:
-ifeq ($(tag),)
-	@echo "Please execute this command with the docker image tag."
-	@echo "Usage:"
-	@echo "	$$ make app-build tag=<version>"
-else
-	docker build -f ./Dockerfile -t istsh/gitops-sample-app:${tag} ./
-endif
-
-app-push:
-ifeq ($(tag),)
-	@echo "Please execute this command with the docker image tag."
-	@echo "Usage:"
-	@echo "	$$ make app-push tag=<version>"
-else
-	docker push istsh/gitops-sample-app:${tag}
-endif
-
-migration-build:
-ifeq ($(tag),)
-	@echo "Please execute this command with the docker image tag."
-	@echo "Usage:"
-	@echo "	$$ make migration-build tag=<version>"
-else
-	docker build -f ./Dockerfile.migration -t istsh/gitops-sample-migration:${tag} ./
-endif
-
-migration-push:
-ifeq ($(tag),)
-	@echo "Please execute this command with the docker image tag."
-	@echo "Usage:"
-	@echo "	$$ make migration-push tag=<version>"
-else
-	docker push istsh/gitops-sample-migration:${tag}
-endif
-
-create-migration-file:
-ifeq ($(name),)
-	@echo "Please execute this command with the migration file name."
-	@echo "Usage:"
-	@echo "	$$ make create-migration-file name=<name>"
-else
-	migrate create -dir db/migrations/ -ext sql ${name}
-endif
