@@ -6,6 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.5.1 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
+	github.com/golangci/golangci-lint v1.39.0 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/jmoiron/sqlx v1.3.1 // indirect
