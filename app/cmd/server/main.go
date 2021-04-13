@@ -9,13 +9,17 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/butterv/go-sqlx/app/domain/model"
+	"github.com/butterv/go-sqlx/app/domain/repository"
 	"github.com/butterv/go-sqlx/app/domain/service/health"
 	"github.com/butterv/go-sqlx/app/domain/service/user"
+	"github.com/butterv/go-sqlx/app/infrastructure/persistence"
 	healthpb "github.com/butterv/go-sqlx/app/interface/rpc/v1/health"
 	userpb "github.com/butterv/go-sqlx/app/interface/rpc/v1/user"
 )
@@ -36,13 +40,25 @@ func main() {
 		fmt.Printf("MYSQL_PASSWORD: %s\n", password)
 	}
 
-	s := newGRPCServer()
+	db := connectDB("")
+	repo := persistence.New(db)
+
+	s := newGRPCServer(repo)
 	reflection.Register(s)
 	_ = s.Serve(listenPort)
 	s.GracefulStop()
 }
 
-func newGRPCServer() *grpc.Server {
+func connectDB(connection string) *sqlx.DB {
+	db, err := sqlx.Open("mysql", connection)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return db
+}
+
+func newGRPCServer(repo repository.Repository) *grpc.Server {
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_validator.UnaryServerInterceptor(),
@@ -51,7 +67,7 @@ func newGRPCServer() *grpc.Server {
 	)
 
 	healthpb.RegisterHealthServer(s, health.NewHealthService())
-	userpb.RegisterUsersServer(s, user.NewUserService())
+	userpb.RegisterUsersServer(s, user.NewUserService(repo, model.NewDefaultUserIDGenerator()))
 
 	return s
 }

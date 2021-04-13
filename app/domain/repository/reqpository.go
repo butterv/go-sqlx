@@ -3,7 +3,7 @@ package repository
 import "context"
 
 type Repository interface {
-	NewConnection(ctx context.Context) (Connection, error)
+	NewConnection(ctx context.Context) Connection
 }
 
 type Connection interface {
