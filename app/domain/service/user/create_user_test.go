@@ -2,16 +2,18 @@ package user_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
 	"github.com/butterv/go-sqlx/app/domain/service/user"
-	"github.com/butterv/go-sqlx/app/infrastructure/inmemory"
-	"github.com/butterv/go-sqlx/app/infrastructure/inmemory/test"
+	mock_persistence "github.com/butterv/go-sqlx/app/infrastructure/mock"
 	pb "github.com/butterv/go-sqlx/app/interface/rpc/v1/user"
+	appstatus "github.com/butterv/go-sqlx/app/status"
 )
 
 type testUserIDGenerator struct {
@@ -29,20 +31,29 @@ func (g *testUserIDGenerator) Generate() model.UserID {
 }
 
 func TestUserService_CreateUser(t *testing.T) {
+	uID := model.UserID("TEST_USER_ID")
+	email := "TEST_EMAIL"
+
 	want := &pb.CreateUserResponse{
-		UserId: "TEST_USER_ID",
+		UserId: string(uID),
 	}
 
-	s := test.NewStore()
-	r := inmemory.New(s)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	uID := model.UserID("TEST_USER_ID")
+	r := mock_persistence.New(ctrl)
+	r.UserRepositoryModify.EXPECT().
+		Create(uID, email).
+		DoAndReturn(func(model.UserID, string) error {
+			return nil
+		})
+
 	userIDGenerator := newTestUserIDGenerator(uID)
 	service := user.NewUserService(r, userIDGenerator)
 
 	ctx := context.Background()
 	req := &pb.CreateUserRequest{
-		Email: "TEST_EMAIL",
+		Email: email,
 	}
 
 	got, err := service.CreateUser(ctx, req)
@@ -52,13 +63,37 @@ func TestUserService_CreateUser(t *testing.T) {
 	if diff := cmp.Diff(got, want, protocmp.Transform()); diff != "" {
 		t.Errorf("service.CreateUser(ctx, %v) = %#v, _; want %v\ndiff = %s", req, got, want, diff)
 	}
+}
 
-	con := r.NewConnection(ctx)
-	gotUser, err := con.User().FindByID(uID)
-	if err != nil {
-		t.Fatalf("con.User().FindByID(%s) = _, %#v; want nil", uID, err)
+func TestUserService_CreateUser_CreateReturnsError(t *testing.T) {
+	wantErr := appstatus.FailedToCreateUser.Err()
+
+	uID := model.UserID("TEST_USER_ID")
+	email := "TEST_EMAIL"
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := mock_persistence.New(ctrl)
+	r.UserRepositoryModify.EXPECT().
+		Create(uID, email).
+		DoAndReturn(func(model.UserID, string) error {
+			return errors.New("an error occurred")
+		})
+
+	userIDGenerator := newTestUserIDGenerator(uID)
+	service := user.NewUserService(r, userIDGenerator)
+
+	ctx := context.Background()
+	req := &pb.CreateUserRequest{
+		Email: email,
 	}
-	if gotUser == nil {
-		t.Errorf("con.User().FindByID(%s) = nil, _; want not nil", uID)
+
+	_, err := service.CreateUser(ctx, req)
+	if err == nil {
+		t.Fatalf("service.CreateUser(ctx, %v) = _, nil; want %v", req, wantErr)
+	}
+	if !errors.Is(err, wantErr) {
+		t.Errorf("service.CreateUser(ctx, %v) = _, %v; want %v", req, err, wantErr)
 	}
 }
