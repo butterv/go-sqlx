@@ -7,10 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
 	"github.com/butterv/go-sqlx/app/infrastructure/persistence/test"
