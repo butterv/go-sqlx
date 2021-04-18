@@ -4,10 +4,9 @@ import (
 	"context"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
+	pb "github.com/butterv/go-sqlx/app/interface/rpc/v1/user"
 	"github.com/butterv/go-sqlx/app/presenter"
 	appstatus "github.com/butterv/go-sqlx/app/status"
-
-	pb "github.com/butterv/go-sqlx/app/interface/rpc/v1/user"
 )
 
 func (s *userService) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {

@@ -3,12 +3,12 @@ package presenter_test
 import (
 	"testing"
 
-	"github.com/butterv/go-sqlx/app/domain/model"
-	"github.com/butterv/go-sqlx/app/presenter"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 
+	"github.com/butterv/go-sqlx/app/domain/model"
 	pb "github.com/butterv/go-sqlx/app/interface/rpc/v1/user"
+	"github.com/butterv/go-sqlx/app/presenter"
 )
 
 func TestUserToPbUser(t *testing.T) {

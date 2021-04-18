@@ -5,9 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
 	"github.com/butterv/go-sqlx/app/infrastructure/persistence/test"
