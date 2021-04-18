@@ -2,42 +2,53 @@ package user_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
 	"github.com/butterv/go-sqlx/app/domain/service/user"
-	"github.com/butterv/go-sqlx/app/infrastructure/inmemory"
-	"github.com/butterv/go-sqlx/app/infrastructure/inmemory/test"
+	mock_persistence "github.com/butterv/go-sqlx/app/infrastructure/mock"
 	pb "github.com/butterv/go-sqlx/app/interface/rpc/v1/user"
+	appstatus "github.com/butterv/go-sqlx/app/status"
 )
 
 func TestUserService_GetUser(t *testing.T) {
+	uID := model.UserID("TEST_USER_ID")
+	email := "TEST_EMAIL"
+
 	want := &pb.GetUserResponse{
 		User: &pb.User{
-			UserId: "TEST_USER_ID",
-			Email:  "TEST_EMAIL",
+			UserId: string(uID),
+			Email:  email,
 		},
 	}
 
-	now := time.Now()
-	s := test.NewStore()
-	s.AddUsers(&model.User{
-		ID:        "TEST_USER_ID",
-		Email:     "TEST_EMAIL",
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	r := inmemory.New(s)
+	r := mock_persistence.New(ctrl)
+	r.UserRepositoryAccess.EXPECT().
+		FindByID(uID).
+		DoAndReturn(func(model.UserID) (*model.User, error) {
+			now := time.Now()
+			return &model.User{
+				ID:        uID,
+				Email:     email,
+				CreatedAt: now,
+				UpdatedAt: now,
+			}, nil
+		})
+
 	service := user.NewUserService(r, model.NewDefaultUserIDGenerator())
 
 	ctx := context.Background()
 	req := &pb.GetUserRequest{
-		UserId: "TEST_USER_ID",
+		UserId: string(uID),
 	}
 
 	got, err := service.GetUser(ctx, req)
@@ -52,13 +63,23 @@ func TestUserService_GetUser(t *testing.T) {
 func TestUserService_GetUser_NotFound(t *testing.T) {
 	want := &pb.GetUserResponse{}
 
-	s := test.NewStore()
-	r := inmemory.New(s)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	uID := model.UserID("TEST_USER_ID")
+
+	r := mock_persistence.New(ctrl)
+	r.UserRepositoryAccess.EXPECT().
+		FindByID(uID).
+		DoAndReturn(func(model.UserID) (*model.User, error) {
+			return nil, nil
+		})
+
 	service := user.NewUserService(r, model.NewDefaultUserIDGenerator())
 
 	ctx := context.Background()
 	req := &pb.GetUserRequest{
-		UserId: "TEST_USER_ID",
+		UserId: string(uID),
 	}
 
 	got, err := service.GetUser(ctx, req)
@@ -67,5 +88,36 @@ func TestUserService_GetUser_NotFound(t *testing.T) {
 	}
 	if diff := cmp.Diff(got, want, protocmp.Transform()); diff != "" {
 		t.Errorf("service.GetUser(ctx, %v) = %#v, _; want %v\ndiff = %s", req, got, want, diff)
+	}
+}
+
+func TestUserService_GetUser_FindByIDReturnsError(t *testing.T) {
+	wantErr := appstatus.FailedToGetUser.Err()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	uID := model.UserID("TEST_USER_ID")
+
+	r := mock_persistence.New(ctrl)
+	r.UserRepositoryAccess.EXPECT().
+		FindByID(uID).
+		DoAndReturn(func(model.UserID) (*model.User, error) {
+			return nil, errors.New("an error occurred")
+		})
+
+	service := user.NewUserService(r, model.NewDefaultUserIDGenerator())
+
+	ctx := context.Background()
+	req := &pb.GetUserRequest{
+		UserId: string(uID),
+	}
+
+	_, err := service.GetUser(ctx, req)
+	if err == nil {
+		t.Fatalf("service.GetUser(ctx, %v) = _, nil; want %v", req, wantErr)
+	}
+	if !errors.Is(err, wantErr) {
+		t.Errorf("service.GetUser(ctx, %v) = _, %v; want %v", req, err, wantErr)
 	}
 }
