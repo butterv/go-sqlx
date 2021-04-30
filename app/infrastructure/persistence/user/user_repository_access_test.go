@@ -1,6 +1,7 @@
 package user_test
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"regexp"
@@ -59,12 +60,13 @@ func TestDbUserRepository_FindByID(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByID(id)
+	ctx := context.Background()
+	got, err := r.FindByID(ctx, id)
 	if err != nil {
-		t.Fatalf("r.FindByID(%s) = _, %#v; want nil", id, err)
+		t.Fatalf("r.FindByID(ctx, %s) = _, %#v; want nil", id, err)
 	}
 	if diff := cmp.Diff(got, want); diff != "" {
-		t.Errorf("r.FindByID(%s) = %#v, _; want %v\ndiff = %s", id, got, want, diff)
+		t.Errorf("r.FindByID(ctx, %s) = %#v, _; want %v\ndiff = %s", id, got, want, diff)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -85,12 +87,13 @@ func TestDbUserRepository_FindByID_NotFound(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByID(id)
+	ctx := context.Background()
+	got, err := r.FindByID(ctx, id)
 	if err != nil {
-		t.Fatalf("r.FindByID(%s) = _, %#v; want nil", id, err)
+		t.Fatalf("r.FindByID(ctx, %s) = _, %#v; want nil", id, err)
 	}
 	if got != nil {
-		t.Errorf("r.FindByID(%s) = %#v, _; want nil", id, got)
+		t.Errorf("r.FindByID(ctx, %s) = %#v, _; want nil", id, got)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -112,15 +115,16 @@ func TestDbUserRepository_FindByID_Error(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByID(id)
+	ctx := context.Background()
+	got, err := r.FindByID(ctx, id)
 	if err == nil {
-		t.Fatalf("r.FindByID(%s) = _, nil; want %v", id, wantErr)
+		t.Fatalf("r.FindByID(ctx, %s) = _, nil; want %v", id, wantErr)
 	}
 	if !errors.Is(err, wantErr) {
-		t.Errorf("r.FindByID(%s) = _, %#v; want %v", id, err, wantErr)
+		t.Errorf("r.FindByID(ctx, %s) = _, %#v; want %v", id, err, wantErr)
 	}
 	if got != nil {
-		t.Errorf("r.FindByID(%s) = %#v, _; want nil", id, got)
+		t.Errorf("r.FindByID(ctx, %s) = %#v, _; want nil", id, got)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -171,12 +175,13 @@ func TestDbUserRepository_FindByIDs(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByIDs(ids)
+	ctx := context.Background()
+	got, err := r.FindByIDs(ctx, ids)
 	if err != nil {
-		t.Fatalf("r.FindByIDs(%v) = _, %#v; want nil", ids, err)
+		t.Fatalf("r.FindByIDs(ctx, %v) = _, %#v; want nil", ids, err)
 	}
 	if diff := cmp.Diff(got, want); diff != "" {
-		t.Errorf("r.FindByIDs(%v) = %#v, _; want %v\ndiff = %s", ids, got, want, diff)
+		t.Errorf("r.FindByIDs(ctx, %v) = %#v, _; want %v\ndiff = %s", ids, got, want, diff)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -191,12 +196,13 @@ func TestDbUserRepository_FindByIDs_InReturnsError(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByIDs(ids)
+	ctx := context.Background()
+	got, err := r.FindByIDs(ctx, ids)
 	if err == nil {
-		t.Fatalf("r.FindByIDs(%v) = _, nil; want not nil", ids)
+		t.Fatalf("r.FindByIDs(ctx, %v) = _, nil; want not nil", ids)
 	}
 	if got != nil {
-		t.Errorf("r.FindByIDs(%v) = %#v, _; want nil", ids, got)
+		t.Errorf("r.FindByIDs(ctx, %v) = %#v, _; want nil", ids, got)
 	}
 }
 
@@ -214,12 +220,13 @@ func TestDbUserRepository_FindByIDs_NotFound(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByIDs(ids)
+	ctx := context.Background()
+	got, err := r.FindByIDs(ctx, ids)
 	if err != nil {
-		t.Fatalf("r.FindByIDs(%v) = _, %#v; want nil", ids, err)
+		t.Fatalf("r.FindByIDs(ctx, %v) = _, %#v; want nil", ids, err)
 	}
 	if got != nil {
-		t.Errorf("r.FindByIDs(%v) = %#v, _; want nil", ids, got)
+		t.Errorf("r.FindByIDs(ctx, %v) = %#v, _; want nil", ids, got)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -241,15 +248,16 @@ func TestDbUserRepository_FindByIDs_Error(t *testing.T) {
 
 	r := user.NewUserRepositoryAccess(db)
 
-	got, err := r.FindByIDs(ids)
+	ctx := context.Background()
+	got, err := r.FindByIDs(ctx, ids)
 	if err == nil {
-		t.Fatalf("r.FindByIDs(%v) = _, nil; want %v", ids, wantErr)
+		t.Fatalf("r.FindByIDs(ctx, %v) = _, nil; want %v", ids, wantErr)
 	}
 	if !errors.Is(err, wantErr) {
-		t.Errorf("r.FindByIDs(%v) = _, %#v; want %v", ids, err, wantErr)
+		t.Errorf("r.FindByIDs(ctx, %v) = _, %#v; want %v", ids, err, wantErr)
 	}
 	if got != nil {
-		t.Errorf("r.FindByIDs(%v) = %#v, _; want nil", ids, got)
+		t.Errorf("r.FindByIDs(ctx, %v) = %#v, _; want nil", ids, got)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)

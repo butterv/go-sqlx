@@ -1,6 +1,8 @@
 package user
 
 import (
+	"context"
+
 	"github.com/jmoiron/sqlx"
 
 	"github.com/butterv/go-sqlx/app/domain/model"
@@ -20,13 +22,13 @@ func NewUserRepositoryModify(tx *sqlx.Tx) *userRepositoryModify {
 	}
 }
 
-func (r *userRepositoryModify) Create(id model.UserID, email string) error {
+func (r *userRepositoryModify) Create(ctx context.Context, id model.UserID, email string) error {
 	u := &model.User{
 		ID:    id,
 		Email: email,
 	}
 
-	_, err := r.tx.NamedExec("INSERT INTO users (id, email) VALUES (:id, :email)", u)
+	_, err := r.tx.NamedExecContext(ctx, "INSERT INTO users (id, email) VALUES (:id, :email)", u)
 	if err != nil {
 		return err
 	}
@@ -34,8 +36,8 @@ func (r *userRepositoryModify) Create(id model.UserID, email string) error {
 	return nil
 }
 
-func (r *userRepositoryModify) DeleteByID(id model.UserID) error {
-	_, err := r.tx.Exec("UPDATE users SET deleted_at = NOW() WHERE id = ?", id)
+func (r *userRepositoryModify) DeleteByID(ctx context.Context, id model.UserID) error {
+	_, err := r.tx.ExecContext(ctx, "UPDATE users SET deleted_at = NOW() WHERE id = ?", id)
 	if err != nil {
 		return err
 	}

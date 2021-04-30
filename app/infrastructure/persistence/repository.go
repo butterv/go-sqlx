@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"context"
-
 	"github.com/jmoiron/sqlx"
 
 	"github.com/butterv/go-sqlx/app/domain/repository"
@@ -27,7 +25,7 @@ func New(db *sqlx.DB) repository.Repository {
 	}
 }
 
-func (r *persistenceRepository) NewConnection(ctx context.Context) repository.Connection {
+func (r *persistenceRepository) NewConnection() repository.Connection {
 	return &persistenceConnection{
 		db: r.db,
 	}

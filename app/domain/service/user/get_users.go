@@ -10,7 +10,7 @@ import (
 )
 
 func (s *userService) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
-	con := s.r.NewConnection(ctx)
+	con := s.r.NewConnection()
 	defer con.Close()
 
 	var uIDs []model.UserID
@@ -18,7 +18,7 @@ func (s *userService) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*p
 		uIDs = append(uIDs, model.UserID(uID))
 	}
 
-	us, err := con.User().FindByIDs(uIDs)
+	us, err := con.User().FindByIDs(ctx, uIDs)
 	if err != nil {
 		// TODO(butterv): output error log
 		return nil, appstatus.FailedToGetUsers.Err()

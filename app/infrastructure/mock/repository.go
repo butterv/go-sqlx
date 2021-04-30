@@ -1,8 +1,6 @@
 package mock_persistence
 
 import (
-	"context"
-
 	"github.com/golang/mock/gomock"
 
 	"github.com/butterv/go-sqlx/app/domain/repository"
@@ -34,7 +32,7 @@ func New(ctrl *gomock.Controller) *MockRepository {
 	}
 }
 
-func (r *MockRepository) NewConnection(context.Context) repository.Connection {
+func (r *MockRepository) NewConnection() repository.Connection {
 	return &MockConnection{
 		mocks: r.mocks,
 	}
