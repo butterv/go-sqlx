@@ -5,6 +5,7 @@
 package mock_persistence
 
 import (
+	context "context"
 	reflect "reflect"
 
 	model "github.com/butterv/go-sqlx/app/domain/model"
@@ -35,33 +36,33 @@ func (m *MockUserRepositoryAccess) EXPECT() *MockUserRepositoryAccessMockRecorde
 }
 
 // FindByID mocks base method.
-func (m *MockUserRepositoryAccess) FindByID(id model.UserID) (*model.User, error) {
+func (m *MockUserRepositoryAccess) FindByID(ctx context.Context, id model.UserID) (*model.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByID", id)
+	ret := m.ctrl.Call(m, "FindByID", ctx, id)
 	ret0, _ := ret[0].(*model.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByID indicates an expected call of FindByID.
-func (mr *MockUserRepositoryAccessMockRecorder) FindByID(id interface{}) *gomock.Call {
+func (mr *MockUserRepositoryAccessMockRecorder) FindByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockUserRepositoryAccess)(nil).FindByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockUserRepositoryAccess)(nil).FindByID), ctx, id)
 }
 
 // FindByIDs mocks base method.
-func (m *MockUserRepositoryAccess) FindByIDs(ids []model.UserID) (model.Users, error) {
+func (m *MockUserRepositoryAccess) FindByIDs(ctx context.Context, ids []model.UserID) (model.Users, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByIDs", ids)
+	ret := m.ctrl.Call(m, "FindByIDs", ctx, ids)
 	ret0, _ := ret[0].(model.Users)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByIDs indicates an expected call of FindByIDs.
-func (mr *MockUserRepositoryAccessMockRecorder) FindByIDs(ids interface{}) *gomock.Call {
+func (mr *MockUserRepositoryAccessMockRecorder) FindByIDs(ctx, ids interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockUserRepositoryAccess)(nil).FindByIDs), ids)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockUserRepositoryAccess)(nil).FindByIDs), ctx, ids)
 }
 
 // MockUserRepositoryModify is a mock of UserRepositoryModify interface.
@@ -88,29 +89,29 @@ func (m *MockUserRepositoryModify) EXPECT() *MockUserRepositoryModifyMockRecorde
 }
 
 // Create mocks base method.
-func (m *MockUserRepositoryModify) Create(id model.UserID, email string) error {
+func (m *MockUserRepositoryModify) Create(ctx context.Context, id model.UserID, email string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", id, email)
+	ret := m.ctrl.Call(m, "Create", ctx, id, email)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockUserRepositoryModifyMockRecorder) Create(id, email interface{}) *gomock.Call {
+func (mr *MockUserRepositoryModifyMockRecorder) Create(ctx, id, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepositoryModify)(nil).Create), id, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepositoryModify)(nil).Create), ctx, id, email)
 }
 
 // DeleteByID mocks base method.
-func (m *MockUserRepositoryModify) DeleteByID(id model.UserID) error {
+func (m *MockUserRepositoryModify) DeleteByID(ctx context.Context, id model.UserID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteByID", id)
+	ret := m.ctrl.Call(m, "DeleteByID", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteByID indicates an expected call of DeleteByID.
-func (mr *MockUserRepositoryModifyMockRecorder) DeleteByID(id interface{}) *gomock.Call {
+func (mr *MockUserRepositoryModifyMockRecorder) DeleteByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockUserRepositoryModify)(nil).DeleteByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockUserRepositoryModify)(nil).DeleteByID), ctx, id)
 }

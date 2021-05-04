@@ -9,12 +9,12 @@ import (
 )
 
 func (s *userService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	con := s.r.NewConnection(ctx)
+	con := s.r.NewConnection()
 	defer con.Close()
 
 	uID := s.userIDGenerator.Generate()
 	err := con.RunTransaction(func(tx repository.Transaction) error {
-		err := tx.User().Create(uID, req.GetEmail())
+		err := tx.User().Create(ctx, uID, req.GetEmail())
 		if err != nil {
 			return err
 		}

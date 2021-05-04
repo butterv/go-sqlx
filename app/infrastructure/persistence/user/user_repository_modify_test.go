@@ -1,6 +1,7 @@
 package user_test
 
 import (
+	"context"
 	"errors"
 	"regexp"
 	"testing"
@@ -45,9 +46,10 @@ func TestTxUserRepository_Create(t *testing.T) {
 
 	r := user.NewUserRepositoryModify(tx)
 
-	err := r.Create(id, email)
+	ctx := context.Background()
+	err := r.Create(ctx, id, email)
 	if err != nil {
-		t.Fatalf("r.Create(%s, %s) = %#v; want nil", id, email, err)
+		t.Fatalf("r.Create(ctx, %s, %s) = %#v; want nil", id, email, err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -69,12 +71,13 @@ func TestTxUserRepository_Create_Error(t *testing.T) {
 
 	r := user.NewUserRepositoryModify(tx)
 
-	err := r.Create(id, email)
+	ctx := context.Background()
+	err := r.Create(ctx, id, email)
 	if err == nil {
-		t.Fatalf("r.Create(%s, %s) = nil; want %v", id, email, wantErr)
+		t.Fatalf("r.Create(ctx, %s, %s) = nil; want %v", id, email, wantErr)
 	}
 	if !errors.Is(err, wantErr) {
-		t.Errorf("r.Create(%s, %s) = %#v; want %v", id, email, err, wantErr)
+		t.Errorf("r.Create(ctx, %s, %s) = %#v; want %v", id, email, err, wantErr)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -94,9 +97,10 @@ func TestTxUserRepository_DeleteByID(t *testing.T) {
 
 	r := user.NewUserRepositoryModify(tx)
 
-	err := r.DeleteByID(id)
+	ctx := context.Background()
+	err := r.DeleteByID(ctx, id)
 	if err != nil {
-		t.Fatalf("r.DeleteByID(%s) = %#v; want nil", id, err)
+		t.Fatalf("r.DeleteByID(ctx, %s) = %#v; want nil", id, err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)
@@ -117,12 +121,13 @@ func TestTxUserRepository_DeleteByID_Error(t *testing.T) {
 
 	r := user.NewUserRepositoryModify(tx)
 
-	err := r.DeleteByID(id)
+	ctx := context.Background()
+	err := r.DeleteByID(ctx, id)
 	if err == nil {
-		t.Fatalf("r.DeleteByID(%s) = nil; want %v", id, wantErr)
+		t.Fatalf("r.DeleteByID(ctx, %s) = nil; want %v", id, wantErr)
 	}
 	if !errors.Is(err, wantErr) {
-		t.Errorf("r.DeleteByID(%s) = %#v; want %v", id, err, wantErr)
+		t.Errorf("r.DeleteByID(ctx, %s) = %#v; want %v", id, err, wantErr)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("mock.ExpectationsWereMet() = %#v; want nil", err)

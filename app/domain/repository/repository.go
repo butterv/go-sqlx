@@ -1,9 +1,7 @@
 package repository
 
-import "context"
-
 type Repository interface {
-	NewConnection(ctx context.Context) Connection
+	NewConnection() Connection
 }
 
 type Connection interface {

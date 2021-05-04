@@ -43,8 +43,8 @@ func TestUserService_CreateUser(t *testing.T) {
 
 	r := mock_persistence.New(ctrl)
 	r.UserRepositoryModify.EXPECT().
-		Create(uID, email).
-		DoAndReturn(func(model.UserID, string) error {
+		Create(gomock.Any(), uID, email).
+		DoAndReturn(func(context.Context, model.UserID, string) error {
 			return nil
 		})
 
@@ -76,8 +76,8 @@ func TestUserService_CreateUser_CreateReturnsError(t *testing.T) {
 
 	r := mock_persistence.New(ctrl)
 	r.UserRepositoryModify.EXPECT().
-		Create(uID, email).
-		DoAndReturn(func(model.UserID, string) error {
+		Create(gomock.Any(), uID, email).
+		DoAndReturn(func(context.Context, model.UserID, string) error {
 			return errors.New("an error occurred")
 		})
 

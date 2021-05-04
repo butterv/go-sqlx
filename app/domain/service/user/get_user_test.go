@@ -33,8 +33,8 @@ func TestUserService_GetUser(t *testing.T) {
 
 	r := mock_persistence.New(ctrl)
 	r.UserRepositoryAccess.EXPECT().
-		FindByID(uID).
-		DoAndReturn(func(model.UserID) (*model.User, error) {
+		FindByID(gomock.Any(), uID).
+		DoAndReturn(func(context.Context, model.UserID) (*model.User, error) {
 			now := time.Now()
 			return &model.User{
 				ID:        uID,
@@ -70,8 +70,8 @@ func TestUserService_GetUser_NotFound(t *testing.T) {
 
 	r := mock_persistence.New(ctrl)
 	r.UserRepositoryAccess.EXPECT().
-		FindByID(uID).
-		DoAndReturn(func(model.UserID) (*model.User, error) {
+		FindByID(gomock.Any(), uID).
+		DoAndReturn(func(context.Context, model.UserID) (*model.User, error) {
 			return nil, nil
 		})
 
@@ -101,8 +101,8 @@ func TestUserService_GetUser_FindByIDReturnsError(t *testing.T) {
 
 	r := mock_persistence.New(ctrl)
 	r.UserRepositoryAccess.EXPECT().
-		FindByID(uID).
-		DoAndReturn(func(model.UserID) (*model.User, error) {
+		FindByID(gomock.Any(), uID).
+		DoAndReturn(func(context.Context, model.UserID) (*model.User, error) {
 			return nil, errors.New("an error occurred")
 		})
 

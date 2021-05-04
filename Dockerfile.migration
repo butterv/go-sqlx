@@ -1,5 +1,5 @@
 FROM migrate/migrate:v4.13.0
 
-COPY db/ db/
+COPY sql/migrations sql/migrations
 
 ENTRYPOINT ["migrate"]

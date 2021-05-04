@@ -10,11 +10,11 @@ import (
 )
 
 func (s *userService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	con := s.r.NewConnection(ctx)
+	con := s.r.NewConnection()
 	defer con.Close()
 
 	uID := model.UserID(req.GetUserId())
-	u, err := con.User().FindByID(uID)
+	u, err := con.User().FindByID(ctx, uID)
 	if err != nil {
 		// TODO(butterv): output error log
 		return nil, appstatus.FailedToGetUser.Err()
